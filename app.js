@@ -1,6 +1,35 @@
 // Gifted Test Practice App - Main Application Logic
+// גרסה 2.0 - עם מאגר חכם, תמונות, Firebase והמשכיות
 
-// State
+const firebaseConfig = {
+  apiKey: "AIzaSyCG1egzGOVJE6-_pTEEb1TTLERxi9SrgBM",
+  authDomain: "mehunanim-app.firebaseapp.com",
+  projectId: "mehunanim-app",
+  storageBucket: "mehunanim-app.firebasestorage.app",
+  messagingSenderId: "974653215323",
+  appId: "1:974653215323:web:4018b3175e6fc2c93fe57e"
+};
+
+
+// Firebase initialization flag
+let firebaseInitialized = false;
+let db = null;
+
+// Try to initialize Firebase
+function initFirebase() {
+    if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            firebaseInitialized = true;
+            console.log('Firebase initialized successfully');
+        } catch (e) {
+            console.log('Firebase initialization failed:', e);
+        }
+    }
+}
+
+// ========== State ==========
 let state = {
     mode: 'practice', // 'practice' or 'test'
     selectedCategories: ['mixed'],
@@ -12,14 +41,67 @@ let state = {
     questionStartTime: null,
     totalTime: 0,
     timerInterval: null,
-    isLoggedIn: false,
-    userName: ''
+    userName: '',
+    currentSetIndex: 0 // For "continue to next set" feature
 };
 
-// User Progress Storage
+// ========== Smart Question Management ==========
 const STORAGE_KEY = 'gifted_app_progress';
+const ANSWERED_QUESTIONS_KEY = 'gifted_answered_questions';
+const COOLDOWN_DAYS = 5;
 
-// Load user progress from localStorage
+// Get answered questions with timestamps
+function getAnsweredQuestions() {
+    try {
+        const data = localStorage.getItem(ANSWERED_QUESTIONS_KEY);
+        return data ? JSON.parse(data) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+// Save answered question with timestamp
+function markQuestionAnswered(questionId, isCorrect) {
+    const answered = getAnsweredQuestions();
+    if (isCorrect) {
+        answered[questionId] = {
+            timestamp: Date.now(),
+            correctCount: (answered[questionId]?.correctCount || 0) + 1
+        };
+    }
+    localStorage.setItem(ANSWERED_QUESTIONS_KEY, JSON.stringify(answered));
+}
+
+// Check if question should be excluded (answered correctly in last 5 days)
+function shouldExcludeQuestion(questionId) {
+    const answered = getAnsweredQuestions();
+    const record = answered[questionId];
+    if (!record) return false;
+    
+    const daysSinceAnswered = (Date.now() - record.timestamp) / (1000 * 60 * 60 * 24);
+    return daysSinceAnswered < COOLDOWN_DAYS;
+}
+
+// Get available questions (excluding recently answered correctly)
+function getAvailableQuestions(categoryFilter) {
+    let allQuestions = QUESTIONS_DATABASE.questions;
+    
+    if (categoryFilter && !categoryFilter.includes('mixed')) {
+        allQuestions = allQuestions.filter(q => categoryFilter.includes(q.category));
+    }
+    
+    // Filter out questions answered correctly in last 5 days
+    const availableQuestions = allQuestions.filter(q => !shouldExcludeQuestion(q.id));
+    
+    // If too few questions available, include some older ones
+    if (availableQuestions.length < 5) {
+        return allQuestions;
+    }
+    
+    return availableQuestions;
+}
+
+// ========== User Progress Storage ==========
 function loadUserProgress() {
     try {
         const data = localStorage.getItem(STORAGE_KEY);
@@ -36,11 +118,10 @@ function loadUserProgress() {
         totalQuestions: 0,
         bestScore: 0,
         categoryStats: {},
-        history: [] // Last 10 quizzes
+        history: []
     };
 }
 
-// Save user progress to localStorage
 function saveUserProgress(progress) {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
@@ -49,7 +130,72 @@ function saveUserProgress(progress) {
     }
 }
 
-// Update progress after quiz
+// ========== Firebase Leaderboard ==========
+async function saveScoreToLeaderboard(score, correct, total, time) {
+    if (!firebaseInitialized || !state.userName) return;
+    
+    try {
+        const docRef = db.collection('leaderboard').doc(state.userName);
+        const doc = await docRef.get();
+        
+        const newData = {
+            name: state.userName,
+            lastScore: score,
+            lastPlayed: firebase.firestore.FieldValue.serverTimestamp(),
+            totalQuizzes: firebase.firestore.FieldValue.increment(1),
+            totalCorrect: firebase.firestore.FieldValue.increment(correct),
+            totalQuestions: firebase.firestore.FieldValue.increment(total)
+        };
+        
+        if (!doc.exists || score > (doc.data().bestScore || 0)) {
+            newData.bestScore = score;
+        }
+        
+        await docRef.set(newData, { merge: true });
+        console.log('Score saved to Firebase');
+    } catch (e) {
+        console.error('Error saving to Firebase:', e);
+    }
+}
+
+async function getLeaderboard() {
+    if (!firebaseInitialized) {
+        return getLocalLeaderboard();
+    }
+    
+    try {
+        const snapshot = await db.collection('leaderboard')
+            .orderBy('bestScore', 'desc')
+            .limit(10)
+            .get();
+        
+        return snapshot.docs.map(doc => ({
+            name: doc.data().name,
+            bestScore: doc.data().bestScore || 0,
+            totalQuizzes: doc.data().totalQuizzes || 0
+        }));
+    } catch (e) {
+        console.error('Error getting leaderboard:', e);
+        return getLocalLeaderboard();
+    }
+}
+
+function getLocalLeaderboard() {
+    const progress = loadUserProgress();
+    if (!progress.userName) return [];
+    
+    const avgScore = progress.totalQuestions > 0 
+        ? Math.round((progress.totalCorrect / progress.totalQuestions) * 100) 
+        : 0;
+    
+    return [{
+        name: progress.userName,
+        bestScore: progress.bestScore,
+        totalQuizzes: progress.totalQuizzes
+    }];
+}
+
+// ========== Update Progress ==========
 function updateProgress() {
     const progress = loadUserProgress();
     const correctCount = state.answers.filter(a => a.isCorrect).length;
@@ -75,10 +221,11 @@ function updateProgress() {
         progress.categoryStats[q.category].total++;
         if (answer && answer.isCorrect) {
             progress.categoryStats[q.category].correct++;
+            markQuestionAnswered(q.id, true);
         }
     });
     
-    // Add to history (keep last 10)
+    // Add to history
     progress.history.unshift({
         date: new Date().toISOString(),
         score: percentage,
@@ -91,16 +238,19 @@ function updateProgress() {
         progress.history = progress.history.slice(0, 10);
     }
     
-    // Update username if set
     if (state.userName) {
         progress.userName = state.userName;
     }
     
     saveUserProgress(progress);
+    
+    // Save to Firebase
+    saveScoreToLeaderboard(percentage, correctCount, totalCount, state.totalTime);
+    
     return progress;
 }
 
-// Show user stats modal
+// ========== Show Stats ==========
 function showStats() {
     const progress = loadUserProgress();
     
@@ -159,9 +309,41 @@ function showStats() {
     document.getElementById('helpModal').classList.add('active');
 }
 
+// ========== Show Leaderboard ==========
+async function showLeaderboard() {
+    const leaders = await getLeaderboard();
+    
+    let leaderboardHtml = '';
+    if (leaders.length === 0) {
+        leaderboardHtml = '<p style="color: #888; text-align: center;">אין עדיין תוצאות</p>';
+    } else {
+        leaders.forEach((leader, index) => {
+            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+            leaderboardHtml += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: ${index < 3 ? '#f8f9ff' : '#fff'}; border-radius: 10px; margin-bottom: 8px;">
+                    <span style="font-size: 1.2rem;">${medal} ${leader.name}</span>
+                    <span style="font-weight: 600; color: #667eea;">${leader.bestScore}%</span>
+                </div>
+            `;
+        });
+    }
+    
+    const modalHtml = `
+        <div class="modal">
+            <h3>🏆 לוח ההישגים</h3>
+            <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                ${leaderboardHtml}
+            </div>
+            <button class="close-modal" onclick="closeStatsModal()">סגור</button>
+        </div>
+    `;
+    
+    document.getElementById('helpModal').innerHTML = modalHtml;
+    document.getElementById('helpModal').classList.add('active');
+}
+
 function closeStatsModal() {
     document.getElementById('helpModal').classList.remove('active');
-    // Restore original modal content
     document.getElementById('helpModal').innerHTML = `
         <div class="modal">
             <h3>💡 הכוונה לפתרון</h3>
@@ -171,7 +353,7 @@ function closeStatsModal() {
     `;
 }
 
-// Set username
+// ========== User Name ==========
 function setUserName() {
     const name = prompt('מה השם שלך?');
     if (name && name.trim()) {
@@ -183,15 +365,15 @@ function setUserName() {
     }
 }
 
-// Update user display in header
 function updateUserDisplay() {
     const progress = loadUserProgress();
     const userArea = document.getElementById('userArea');
     if (userArea) {
         if (progress.userName) {
+            state.userName = progress.userName;
             userArea.innerHTML = `
                 <span style="cursor: pointer;" onclick="showStats()">👤 ${progress.userName}</span>
-                <span style="margin-right: 10px; cursor: pointer;" onclick="showStats()">📊</span>
+                <span style="margin-right: 10px; cursor: pointer;" onclick="showLeaderboard()">🏆</span>
             `;
         } else {
             userArea.innerHTML = `
@@ -203,20 +385,19 @@ function updateUserDisplay() {
     }
 }
 
-// Initialize app
+// ========== Initialize ==========
 document.addEventListener('DOMContentLoaded', function() {
+    initFirebase();
     initializeCategories();
     updateUserDisplay();
     showScreen('home');
     
-    // Load saved username
     const progress = loadUserProgress();
     if (progress.userName) {
         state.userName = progress.userName;
     }
 });
 
-// Initialize category grid
 function initializeCategories() {
     const grid = document.getElementById('categoryGrid');
     grid.innerHTML = '';
@@ -234,21 +415,17 @@ function initializeCategories() {
     });
 }
 
-// Toggle category selection
 function toggleCategory(categoryId) {
     const btn = document.querySelector(`[data-category="${categoryId}"]`);
     
     if (categoryId === 'mixed') {
-        // If mixed is selected, deselect others
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         state.selectedCategories = ['mixed'];
     } else {
-        // Deselect mixed if other category is selected
         document.querySelector('[data-category="mixed"]').classList.remove('selected');
         btn.classList.toggle('selected');
         
-        // Update state
         const index = state.selectedCategories.indexOf('mixed');
         if (index > -1) state.selectedCategories.splice(index, 1);
         
@@ -261,7 +438,6 @@ function toggleCategory(categoryId) {
             if (idx > -1) state.selectedCategories.splice(idx, 1);
         }
         
-        // If nothing selected, select mixed
         if (state.selectedCategories.length === 0) {
             document.querySelector('[data-category="mixed"]').classList.add('selected');
             state.selectedCategories = ['mixed'];
@@ -269,7 +445,6 @@ function toggleCategory(categoryId) {
     }
 }
 
-// Select mode
 function selectMode(mode) {
     state.mode = mode;
     document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -277,7 +452,6 @@ function selectMode(mode) {
     });
 }
 
-// Select question count
 function selectCount(count) {
     state.questionCount = count;
     document.querySelectorAll('.count-btn').forEach(btn => {
@@ -285,23 +459,32 @@ function selectCount(count) {
     });
 }
 
-// Start quiz
-function startQuiz() {
-    // Gather questions from selected categories
-    let allQuestions = [];
+// ========== Start Quiz ==========
+function startQuiz(continueSet = false) {
+    // Get available questions (excluding recently answered correctly)
+    let availableQuestions = getAvailableQuestions(state.selectedCategories);
     
-    if (state.selectedCategories.includes('mixed')) {
-        allQuestions = [...QUESTIONS_DATABASE.questions];
+    // Shuffle
+    const shuffled = availableQuestions.sort(() => Math.random() - 0.5);
+    
+    // Handle "continue to next set"
+    if (continueSet) {
+        const startIndex = state.currentSetIndex * state.questionCount;
+        state.questions = shuffled.slice(startIndex, startIndex + state.questionCount);
+        state.currentSetIndex++;
     } else {
-        state.selectedCategories.forEach(catId => {
-            const catQuestions = QUESTIONS_DATABASE.questions.filter(q => q.category === catId);
-            allQuestions.push(...catQuestions);
-        });
+        state.questions = shuffled.slice(0, Math.min(state.questionCount, shuffled.length));
+        state.currentSetIndex = 1;
     }
     
-    // Shuffle and pick
-    const shuffled = allQuestions.sort(() => Math.random() - 0.5);
-    state.questions = shuffled.slice(0, Math.min(state.questionCount, shuffled.length));
+    // If not enough questions, just use what we have
+    if (state.questions.length === 0) {
+        state.questions = QUESTIONS_DATABASE.questions
+            .filter(q => state.selectedCategories.includes('mixed') || state.selectedCategories.includes(q.category))
+            .sort(() => Math.random() - 0.5)
+            .slice(0, state.questionCount);
+        state.currentSetIndex = 1;
+    }
     
     // Reset state
     state.currentQuestionIndex = 0;
@@ -309,15 +492,12 @@ function startQuiz() {
     state.startTime = Date.now();
     state.totalTime = 0;
     
-    // Start timer
     startTimer();
-    
-    // Show quiz screen
     showScreen('quiz');
     displayQuestion();
 }
 
-// Display current question
+// ========== Display Question ==========
 function displayQuestion() {
     const question = state.questions[state.currentQuestionIndex];
     const totalQuestions = state.questions.length;
@@ -328,13 +508,27 @@ function displayQuestion() {
     document.getElementById('questionNumber').textContent = 
         `שאלה ${state.currentQuestionIndex + 1} מתוך ${totalQuestions}`;
     
-    // Build question content
     const content = document.getElementById('questionContent');
+    let html = '';
     
-    let html = `
-        <div class="question-text">${question.question}</div>
-        <div class="answers-grid">
-    `;
+    // Check if question has image
+    if (question.type === 'image' && question.questionImage) {
+        html = `
+            <div class="question-text">${question.question}</div>
+            <div class="question-image-container" style="text-align: center; margin-bottom: 20px;">
+                <img src="${question.questionImage}" alt="שאלה" 
+                     style="max-width: 100%; max-height: 400px; border-radius: 12px; border: 2px solid #e0e0e0;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <p style="display: none; color: #888; padding: 20px;">התמונה לא נטענה - בדוק שהתיקייה images הועלתה ל-GitHub</p>
+            </div>
+            <div class="answers-grid">
+        `;
+    } else {
+        html = `
+            <div class="question-text">${question.question}</div>
+            <div class="answers-grid">
+        `;
+    }
     
     const letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו'];
     question.answers.forEach((answer, index) => {
@@ -349,27 +543,21 @@ function displayQuestion() {
     html += '</div>';
     content.innerHTML = html;
     
-    // Reset next button
     document.getElementById('nextBtn').disabled = true;
-    
-    // Record question start time
     state.questionStartTime = Date.now();
 }
 
-// Select answer
+// ========== Select Answer ==========
 function selectAnswer(index) {
     const question = state.questions[state.currentQuestionIndex];
     const buttons = document.querySelectorAll('.answer-btn');
     const isCorrect = index === question.correctIndex;
     
-    // Check if already answered
     const existingAnswer = state.answers.find(a => a.questionId === question.id);
     if (existingAnswer) return;
     
-    // Calculate time spent on this question
     const timeSpent = Math.round((Date.now() - state.questionStartTime) / 1000);
     
-    // Record answer
     state.answers.push({
         questionId: question.id,
         selectedIndex: index,
@@ -377,14 +565,12 @@ function selectAnswer(index) {
         timeSpent: timeSpent
     });
     
-    // Update UI
     buttons.forEach(btn => {
         btn.classList.remove('selected');
         btn.classList.add('disabled');
     });
     buttons[index].classList.add('selected');
     
-    // In practice mode, show correct/incorrect immediately
     if (state.mode === 'practice') {
         buttons[index].classList.add(isCorrect ? 'correct' : 'incorrect');
         if (!isCorrect) {
@@ -392,20 +578,9 @@ function selectAnswer(index) {
         }
     }
     
-    // Enable next button
     document.getElementById('nextBtn').disabled = false;
-    
-    // Auto-advance after delay in test mode
-    if (state.mode === 'test') {
-        setTimeout(() => {
-            if (state.currentQuestionIndex < state.questions.length - 1) {
-                // Can click next or wait
-            }
-        }, 500);
-    }
 }
 
-// Next question
 function nextQuestion() {
     if (state.currentQuestionIndex < state.questions.length - 1) {
         state.currentQuestionIndex++;
@@ -415,21 +590,17 @@ function nextQuestion() {
     }
 }
 
-// Finish quiz
+// ========== Finish Quiz ==========
 function finishQuiz() {
-    // Stop timer
     stopTimer();
     state.totalTime = Math.round((Date.now() - state.startTime) / 1000);
     
-    // Calculate results
     const correctCount = state.answers.filter(a => a.isCorrect).length;
     const totalCount = state.questions.length;
     const percentage = Math.round((correctCount / totalCount) * 100);
     
-    // Save progress
-    const progress = updateProgress();
+    updateProgress();
     
-    // Determine emoji and message
     let emoji, message;
     if (percentage >= 90) {
         emoji = '🏆';
@@ -445,34 +616,67 @@ function finishQuiz() {
         message = 'לא נורא, תמשיך להתאמן!';
     }
     
-    // Format time
     const minutes = Math.floor(state.totalTime / 60);
     const seconds = state.totalTime % 60;
     const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
-    // Update results screen
-    document.getElementById('resultEmoji').textContent = emoji;
-    document.getElementById('resultTitle').textContent = message;
-    document.getElementById('scorePercent').textContent = `${percentage}%`;
-    document.getElementById('correctCount').textContent = correctCount;
-    document.getElementById('totalCount').textContent = totalCount;
-    document.getElementById('totalTime').textContent = timeStr;
+    // Check if more questions available
+    const moreAvailable = getAvailableQuestions(state.selectedCategories).length > state.questionCount;
     
-    // Show improvement message if applicable
-    const improvementMsg = document.getElementById('improvementMsg');
-    if (improvementMsg) {
-        if (percentage > progress.bestScore - percentage) {
-            improvementMsg.textContent = '🎉 שיא חדש!';
-            improvementMsg.style.display = 'block';
-        } else {
-            improvementMsg.style.display = 'none';
-        }
-    }
+    document.getElementById('resultsScreen').innerHTML = `
+        <div class="results-header">
+            <div class="trophy">${emoji}</div>
+            <h2>${message}</h2>
+        </div>
+
+        <div class="score-circle">
+            <span class="score">${percentage}%</span>
+            <span class="label">ציון</span>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="value">${correctCount}</div>
+                <div class="label">תשובות נכונות</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">${totalCount}</div>
+                <div class="label">סה״כ שאלות</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">${timeStr}</div>
+                <div class="label">זמן כולל</div>
+            </div>
+        </div>
+
+        <div class="share-section">
+            <h4>שתף את ההישג שלך! 👨‍👩‍👧</h4>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button class="share-btn" onclick="shareResults('whatsapp')">
+                    <span>📱</span> וואטסאפ
+                </button>
+                <button class="share-btn" onclick="shareResults('email')" style="background: #EA4335;">
+                    <span>📧</span> אימייל
+                </button>
+            </div>
+        </div>
+
+        ${moreAvailable ? `
+            <button onclick="startQuiz(true)" class="start-btn" style="margin-bottom: 15px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);">
+                ▶️ המשך לסט הבא
+            </button>
+        ` : ''}
+
+        <div class="results-actions">
+            <button class="results-btn review-btn" onclick="reviewAnswers()">📋 סקירת תשובות</button>
+            <button class="results-btn home-btn" onclick="goHome()">🏠 חזרה הביתה</button>
+        </div>
+    `;
     
     showScreen('results');
 }
 
-// Timer functions
+// ========== Timer ==========
 function startTimer() {
     state.timerInterval = setInterval(updateTimer, 1000);
 }
@@ -492,7 +696,7 @@ function updateTimer() {
         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-// Show help
+// ========== Help ==========
 function showHelp() {
     const question = state.questions[state.currentQuestionIndex];
     document.getElementById('helpText').textContent = question.hint || 'נסה לחשוב על הקשר בין הדברים בשאלה.';
@@ -503,23 +707,34 @@ function closeHelp() {
     document.getElementById('helpModal').classList.remove('active');
 }
 
-// Share results
-function shareResults() {
+// ========== Share Results ==========
+function shareResults(method = 'whatsapp') {
     const correctCount = state.answers.filter(a => a.isCorrect).length;
     const totalCount = state.questions.length;
     const percentage = Math.round((correctCount / totalCount) * 100);
     
-    const message = `🌟 הילד/ה סיים/ה תרגול למבחן מחוננים!\n\n` +
+    const minutes = Math.floor(state.totalTime / 60);
+    const seconds = state.totalTime % 60;
+    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    const message = `🌟 ${state.userName || 'הילד/ה'} סיים/ה תרגול למבחן מחוננים!\n\n` +
         `📊 ציון: ${percentage}%\n` +
         `✅ תשובות נכונות: ${correctCount} מתוך ${totalCount}\n` +
-        `⏱️ זמן: ${document.getElementById('totalTime').textContent}\n\n` +
-        `💪 כל הכבוד!`;
+        `⏱️ זמן: ${timeStr}\n\n` +
+        `💪 כל הכבוד!\n\n` +
+        `🔗 לתרגול: https://kyky.github.io/MEHUNANIM/`;
     
-    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    if (method === 'whatsapp') {
+        const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    } else if (method === 'email') {
+        const subject = encodeURIComponent(`תוצאות תרגול מבחן מחוננים - ${percentage}%`);
+        const body = encodeURIComponent(message);
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    }
 }
 
-// Review answers
+// ========== Review Answers ==========
 function reviewAnswers() {
     let html = '<h3 style="margin-bottom: 20px; color: #333;">סקירת תשובות</h3>';
     
@@ -532,6 +747,7 @@ function reviewAnswers() {
                 <div style="font-weight: 600; margin-bottom: 10px;">
                     ${answer.isCorrect ? '✅' : '❌'} שאלה ${index + 1}: ${question.question}
                 </div>
+                ${question.questionImage ? `<img src="${question.questionImage}" style="max-width: 200px; margin: 10px 0; border-radius: 8px;" onerror="this.style.display='none'">` : ''}
                 <div style="color: #666;">
                     התשובה שלך: ${letters[answer.selectedIndex]}. ${question.answers[answer.selectedIndex]}
                 </div>
@@ -549,73 +765,30 @@ function reviewAnswers() {
     document.getElementById('resultsScreen').innerHTML = html;
 }
 
-// Go home
+// ========== Go Home ==========
 function goHome() {
     showScreen('home');
-    // Reinitialize
     state.currentQuestionIndex = 0;
     state.questions = [];
     state.answers = [];
     stopTimer();
-    
-    // Recreate results screen HTML
-    document.getElementById('resultsScreen').innerHTML = `
-        <div class="results-header">
-            <div class="trophy" id="resultEmoji">🏆</div>
-            <h2 id="resultTitle">כל הכבוד!</h2>
-        </div>
-
-        <div class="score-circle">
-            <span class="score" id="scorePercent">85%</span>
-            <span class="label">ציון</span>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="value" id="correctCount">8</div>
-                <div class="label">תשובות נכונות</div>
-            </div>
-            <div class="stat-item">
-                <div class="value" id="totalCount">10</div>
-                <div class="label">סה״כ שאלות</div>
-            </div>
-            <div class="stat-item">
-                <div class="value" id="totalTime">2:30</div>
-                <div class="label">זמן כולל</div>
-            </div>
-        </div>
-
-        <div class="share-section">
-            <h4>שתף את ההישג שלך עם ההורים! 👨‍👩‍👧</h4>
-            <button class="share-btn" onclick="shareResults()">
-                <span>📱</span> שתף בוואטסאפ
-            </button>
-        </div>
-
-        <div class="results-actions">
-            <button class="results-btn review-btn" onclick="reviewAnswers()">📋 סקירת תשובות</button>
-            <button class="results-btn home-btn" onclick="goHome()">🏠 חזרה הביתה</button>
-        </div>
-    `;
 }
 
-// Screen management
+// ========== Screen Management ==========
 function showScreen(screenName) {
     document.getElementById('homeScreen').style.display = screenName === 'home' ? 'block' : 'none';
     document.getElementById('quizScreen').style.display = screenName === 'quiz' ? 'block' : 'none';
     document.getElementById('resultsScreen').style.display = screenName === 'results' ? 'block' : 'none';
 }
 
-// Close modal when clicking outside
+// ========== Event Listeners ==========
 document.getElementById('helpModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeHelp();
     }
 });
 
-// Keyboard navigation
 document.addEventListener('keydown', function(e) {
-    // Number keys for answers
     if (e.key >= '1' && e.key <= '6') {
         const index = parseInt(e.key) - 1;
         const btn = document.querySelector(`.answer-btn[data-index="${index}"]`);
@@ -624,7 +797,6 @@ document.addEventListener('keydown', function(e) {
         }
     }
     
-    // Enter or Space for next
     if (e.key === 'Enter' || e.key === ' ') {
         const nextBtn = document.getElementById('nextBtn');
         if (nextBtn && !nextBtn.disabled && document.getElementById('quizScreen').style.display !== 'none') {
@@ -633,7 +805,6 @@ document.addEventListener('keydown', function(e) {
         }
     }
     
-    // Escape to close modal
     if (e.key === 'Escape') {
         closeHelp();
     }
