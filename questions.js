@@ -5,12 +5,13 @@ const QUESTIONS_DATABASE = {
     // קטגוריות
     categories: [
         { id: 'verbal_analogies', name: 'אנלוגיות מילוליות', emoji: '🔤', description: 'מציאת קשר בין מילים' },
-        { id: 'visual_analogies', name: 'אנלוגיות צורניות', emoji: '🔷', description: 'מציאת קשר בין צורות' },
+        { id: 'visual_analogies', name: 'אנלוגיות צורניות', emoji: '🔷', description: 'מציאת קשר בין צורות', hasImages: true },
         { id: 'word_problems', name: 'בעיות מילוליות', emoji: '📐', description: 'בעיות חשבון בסיפור' },
         { id: 'sequences', name: 'סדרות מספרים', emoji: '🔢', description: 'מציאת החוקיות' },
+        { id: 'visual_sequences', name: 'סדרות צורניות', emoji: '🔶', description: 'מציאת הדפוס בצורות', hasImages: true },
         { id: 'general_knowledge', name: 'ידע כללי', emoji: '🌍', description: 'שאלות ידע' },
         { id: 'vocabulary', name: 'אוצר מילים', emoji: '📚', description: 'משמעות מילים וביטויים' },
-        { id: 'matrices', name: 'מטריצות', emoji: '⬛', description: 'השלמת דפוסים' },
+        { id: 'matrices', name: 'מטריצות', emoji: '⬛', description: 'השלמת דפוסים', hasImages: true },
         { id: 'odd_one_out', name: 'יוצא דופן', emoji: '🎯', description: 'מציאת השונה' },
         { id: 'fractions', name: 'שברים והמרות', emoji: '🔢', description: 'חישובים עם שברים' },
         { id: 'mixed', name: 'תרגול מעורב', emoji: '🎲', description: 'מכל הנושאים' }
@@ -109,7 +110,6 @@ const QUESTIONS_DATABASE = {
             correctIndex: 1,
             hint: 'מה לובשים על הרגל? ומה לובשים על היד?'
         },
-        // שאלות חדשות מהתמונות
         {
             id: 11,
             category: 'verbal_analogies',
@@ -200,50 +200,311 @@ const QUESTIONS_DATABASE = {
             correctIndex: 0,
             hint: 'מי נותן חלב? פרה. מי נותן ביצים?'
         },
+
+        // ========== אנלוגיות צורניות (עם תמונות) ==========
         {
-            id: 21,
-            category: 'verbal_analogies',
-            type: 'text',
-            question: 'צייר : מכחול = נגר : _______',
-            answers: ['עץ', 'פטיש', 'שולחן', 'מסמר'],
-            correctIndex: 1,
-            hint: 'צייר משתמש במכחול לעבודתו. במה משתמש נגר?'
-        },
-        {
-            id: 22,
-            category: 'verbal_analogies',
-            type: 'text',
-            question: 'דבורה : דבש = פרה : _______',
-            answers: ['חלב', 'בשר', 'עור', 'קרניים'],
+            id: 501,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_001.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
             correctIndex: 0,
-            hint: 'דבורה מייצרת דבש. מה פרה נותנת?'
+            hint: 'חפש את הקשר בין שתי הצורות הראשונות והפעל אותו על הצורה השלישית.'
         },
         {
-            id: 23,
-            category: 'verbal_analogies',
-            type: 'text',
-            question: 'ארנב : קופץ = נחש : _______',
-            answers: ['ארסי', 'זוחל', 'ארוך', 'ירוק'],
+            id: 502,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_002.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
             correctIndex: 1,
-            hint: 'ארנב קופץ - זו הדרך שהוא נע. איך נחש נע?'
+            hint: 'שים לב לשינויים בגודל, צבע או כיוון בין הצורות.'
         },
         {
-            id: 24,
-            category: 'verbal_analogies',
-            type: 'text',
-            question: 'חורף : קר = קיץ : _______',
-            answers: ['שמש', 'חם', 'ים', 'חופש'],
-            correctIndex: 1,
-            hint: 'בחורף קר. מה מאפיין את הקיץ?'
-        },
-        {
-            id: 25,
-            category: 'verbal_analogies',
-            type: 'text',
-            question: 'תפוח : עץ = גזר : _______',
-            answers: ['כתום', 'ירק', 'אדמה', 'גינה'],
+            id: 503,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_003.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
             correctIndex: 2,
-            hint: 'תפוח גדל על עץ. איפה גדל גזר?'
+            hint: 'בדוק האם יש סיבוב, שיקוף או שינוי בכמות האלמנטים.'
+        },
+        {
+            id: 504,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_004.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 0,
+            hint: 'האם הצורה מתהפכת? משתקפת? גדלה או קטנה?'
+        },
+        {
+            id: 505,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_005.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 3,
+            hint: 'חשוב על הכלל שקושר את שתי הצורות הראשונות.'
+        },
+        {
+            id: 506,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_006.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 1,
+            hint: 'שים לב לדפוס החוזר על עצמו.'
+        },
+        {
+            id: 507,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_007.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 2,
+            hint: 'בדוק מה השתנה מהצורה הראשונה לשנייה.'
+        },
+        {
+            id: 508,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_008.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 0,
+            hint: 'אותו הכלל צריך לחול גם על הזוג השני.'
+        },
+        {
+            id: 509,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_009.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 1,
+            hint: 'האם יש קשר בין הצבעים או הצורות?'
+        },
+        {
+            id: 510,
+            category: 'visual_analogies',
+            type: 'image',
+            questionImage: 'images/visual_analogies/visual_analogies_010.png',
+            question: 'מצא את הצורה שמשלימה את האנלוגיה:',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 3,
+            hint: 'נסה למצוא את החוקיות.'
+        },
+
+        // ========== מטריצות (עם תמונות) ==========
+        {
+            id: 601,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_001.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 0,
+            hint: 'בדוק את הדפוס בכל שורה ובכל עמודה.'
+        },
+        {
+            id: 602,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_002.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 2,
+            hint: 'מה משותף לכל שורה? מה משותף לכל עמודה?'
+        },
+        {
+            id: 603,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_003.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 1,
+            hint: 'חפש דפוס שחוזר על עצמו.'
+        },
+        {
+            id: 604,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_004.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 3,
+            hint: 'שים לב לשינויים מתא לתא.'
+        },
+        {
+            id: 605,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_005.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 4,
+            hint: 'האם יש סיבוב או שיקוף?'
+        },
+        {
+            id: 606,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_006.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 0,
+            hint: 'בדוק את האלכסון.'
+        },
+        {
+            id: 607,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_007.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 2,
+            hint: 'כמה אלמנטים יש בכל שורה?'
+        },
+        {
+            id: 608,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_008.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 5,
+            hint: 'חשוב על הלוגיקה של הטבלה.'
+        },
+        {
+            id: 609,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_009.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 1,
+            hint: 'מה חסר כדי להשלים את הדפוס?'
+        },
+        {
+            id: 610,
+            category: 'matrices',
+            type: 'image',
+            questionImage: 'images/matrices/matrices_010.png',
+            question: 'איזו צורה משלימה את המטריצה?',
+            answers: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+            correctIndex: 4,
+            hint: 'התשובה צריכה להתאים לשורה ולעמודה.'
+        },
+
+        // ========== סדרות צורניות (עם תמונות) ==========
+        {
+            id: 701,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_001.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 0,
+            hint: 'חפש את הדפוס שחוזר על עצמו.'
+        },
+        {
+            id: 702,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_002.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 2,
+            hint: 'מה משתנה מצורה לצורה?'
+        },
+        {
+            id: 703,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_003.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 1,
+            hint: 'האם יש תנועה סיבובית?'
+        },
+        {
+            id: 704,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_004.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 3,
+            hint: 'שים לב לכיוון השינויים.'
+        },
+        {
+            id: 705,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_005.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 0,
+            hint: 'בדוק את מספר האלמנטים בכל שלב.'
+        },
+        {
+            id: 706,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_006.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 2,
+            hint: 'חשוב על סיבוב או שיקוף.'
+        },
+        {
+            id: 707,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_007.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 1,
+            hint: 'מה הכלל שמנחה את הסדרה?'
+        },
+        {
+            id: 708,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_008.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 3,
+            hint: 'עקוב אחרי השינויים בסדר.'
+        },
+        {
+            id: 709,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_009.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 0,
+            hint: 'האם הגודל משתנה? הצבע? הכמות?'
+        },
+        {
+            id: 710,
+            category: 'visual_sequences',
+            type: 'image',
+            questionImage: 'images/visual_sequences/visual_sequences_010.png',
+            question: 'מה הצורה הבאה בסדרה?',
+            answers: ['א', 'ב', 'ג', 'ד'],
+            correctIndex: 2,
+            hint: 'מצא את החוקיות והמשך אותה.'
         },
 
         // ========== בעיות מילוליות ==========
@@ -337,125 +598,6 @@ const QUESTIONS_DATABASE = {
             correctIndex: 0,
             hint: 'מה שהיה פחות מה שנמכר: 100-37-28=?'
         },
-        {
-            id: 111,
-            category: 'word_problems',
-            type: 'text',
-            question: 'לתומר יש 56 קלפים. הוא חילק אותם שווה ל-7 חברים. כמה קלפים קיבל כל חבר?',
-            answers: ['7', '8', '49', '63'],
-            correctIndex: 1,
-            hint: '56 קלפים חלקי 7 חברים = ? קלפים לכל חבר'
-        },
-        {
-            id: 112,
-            category: 'word_problems',
-            type: 'text',
-            question: 'ספר עולה 25 ש"ח. מיכל קנתה 4 ספרים וקיבלה הנחה של 10 ש"ח. כמה שילמה?',
-            answers: ['100 ש"ח', '90 ש"ח', '110 ש"ח', '85 ש"ח'],
-            correctIndex: 1,
-            hint: '4 ספרים × 25 ש"ח = 100 ש"ח. פחות הנחה של 10 ש"ח = ?'
-        },
-        {
-            id: 113,
-            category: 'word_problems',
-            type: 'text',
-            question: 'רכבת יוצאת ב-8:30 ומגיעה ליעד אחרי שעתיים וחצי. מתי היא מגיעה?',
-            answers: ['10:30', '11:00', '10:00', '11:30'],
-            correctIndex: 1,
-            hint: '8:30 + 2 שעות = 10:30. + עוד חצי שעה = ?'
-        },
-        {
-            id: 114,
-            category: 'word_problems',
-            type: 'text',
-            question: 'בקופסה יש 72 סוכריות. חילקו אותן שווה ל-8 ילדים. כמה סוכריות קיבל כל ילד?',
-            answers: ['8', '9', '64', '80'],
-            correctIndex: 1,
-            hint: '72÷8=?'
-        },
-        {
-            id: 115,
-            category: 'word_problems',
-            type: 'text',
-            question: 'אורי קנה 3 מחברות ב-6 ש"ח כל אחת ו-2 עפרונות ב-3 ש"ח כל אחד. כמה שילם?',
-            answers: ['24 ש"ח', '18 ש"ח', '21 ש"ח', '27 ש"ח'],
-            correctIndex: 0,
-            hint: 'מחברות: 3×6=18. עפרונות: 2×3=6. סה"כ: 18+6=?'
-        },
-
-        // ========== שברים והמרות ==========
-        {
-            id: 151,
-            category: 'fractions',
-            type: 'text',
-            question: 'הדרך לבית הספר ברכיבה על אופניים אורכת ½ שעה, הדרך באוטובוס אורכת 20 דקות. כמה זמן יחסוך דן אם יסע באוטובוס?',
-            answers: ['15 דקות', 'אין הבדל', '2 דקות', '10 דקות'],
-            correctIndex: 3,
-            hint: '½ שעה = 30 דקות. ההפרש: 30-20 = ?'
-        },
-        {
-            id: 152,
-            category: 'fractions',
-            type: 'text',
-            question: 'כדי לעלות לרכבת ההרים צריך להיות בגובה של 1 מטר ו-30 ס"מ לפחות. הגובה של יואבי הוא 95 ס"מ. כמה ס"מ חסרים לו?',
-            answers: ['40', '35', '30', '90'],
-            correctIndex: 1,
-            hint: '1 מטר = 100 ס"מ. אז 1.30 מטר = 130 ס"מ. חסר: 130-95=?'
-        },
-        {
-            id: 153,
-            category: 'fractions',
-            type: 'text',
-            question: 'מחיר ½ קילוגרם שוקולד 20 שקלים. מה המחיר של 4 קילוגרמים שוקולד?',
-            answers: ['80 ש"ח', '100 ש"ח', '180 ש"ח', '160 ש"ח'],
-            correctIndex: 3,
-            hint: 'אם ½ ק"ג = 20₪, אז 1 ק"ג = 40₪. ו-4 ק"ג = ?'
-        },
-        {
-            id: 154,
-            category: 'fractions',
-            type: 'text',
-            question: 'כדי להכין 60 פנקייקים צריך 2 קילוגרמים קמח. לקרן יש 700 גרם קמח. כמה גרמים חסרים לה?',
-            answers: ['1 ק"ג', '1,300 גרם', '10 גרם', '1,400 גרם'],
-            correctIndex: 1,
-            hint: '2 ק"ג = 2000 גרם. חסר: 2000-700=?'
-        },
-        {
-            id: 155,
-            category: 'fractions',
-            type: 'text',
-            question: 'לדני יש 2 מטר של חוט. הוא השתמש ב-80 ס"מ. כמה נשאר לו?',
-            answers: ['120 ס"מ', '180 ס"מ', '20 ס"מ', '280 ס"מ'],
-            correctIndex: 0,
-            hint: '2 מטר = 200 ס"מ. נשאר: 200-80=?'
-        },
-        {
-            id: 156,
-            category: 'fractions',
-            type: 'text',
-            question: 'עוגה חולקה ל-8 חלקים שווים. אכלו 3 חלקים. איזה חלק מהעוגה נאכל?',
-            answers: ['⅜', '⅝', '⅓', '⅛'],
-            correctIndex: 0,
-            hint: 'אכלו 3 חלקים מתוך 8. זה שבר של 3 על 8.'
-        },
-        {
-            id: 157,
-            category: 'fractions',
-            type: 'text',
-            question: 'שליש מ-24 הוא:',
-            answers: ['6', '8', '12', '3'],
-            correctIndex: 1,
-            hint: 'שליש = חילוק ב-3. 24÷3=?'
-        },
-        {
-            id: 158,
-            category: 'fractions',
-            type: 'text',
-            question: 'רבע שעה זה כמה דקות?',
-            answers: ['25', '20', '15', '10'],
-            correctIndex: 2,
-            hint: 'שעה = 60 דקות. רבע = חלקי 4. 60÷4=?'
-        },
 
         // ========== סדרות מספרים ==========
         {
@@ -548,50 +690,52 @@ const QUESTIONS_DATABASE = {
             correctIndex: 1,
             hint: 'אלה מספרים ראשוניים (מתחלקים רק ב-1 ובעצמם). המספר הראשוני הבא אחרי 11 הוא?'
         },
+
+        // ========== שברים והמרות ==========
         {
-            id: 211,
-            category: 'sequences',
+            id: 151,
+            category: 'fractions',
             type: 'text',
-            question: '50, 45, 40, 35, __',
-            answers: ['25', '30', '20', '40'],
+            question: 'הדרך לבית הספר ברכיבה על אופניים אורכת ½ שעה, הדרך באוטובוס אורכת 20 דקות. כמה זמן יחסוך דן אם יסע באוטובוס?',
+            answers: ['15 דקות', 'אין הבדל', '2 דקות', '10 דקות'],
+            correctIndex: 3,
+            hint: '½ שעה = 30 דקות. ההפרש: 30-20 = ?'
+        },
+        {
+            id: 152,
+            category: 'fractions',
+            type: 'text',
+            question: 'כדי לעלות לרכבת ההרים צריך להיות בגובה של 1 מטר ו-30 ס"מ לפחות. הגובה של יואבי הוא 95 ס"מ. כמה ס"מ חסרים לו?',
+            answers: ['40', '35', '30', '90'],
             correctIndex: 1,
-            hint: 'סדרה יורדת, כל פעם מורידים 5. 35-5=?'
+            hint: '1 מטר = 100 ס"מ. אז 1.30 מטר = 130 ס"מ. חסר: 130-95=?'
         },
         {
-            id: 212,
-            category: 'sequences',
+            id: 153,
+            category: 'fractions',
             type: 'text',
-            question: '1, 3, 6, 10, 15, __',
-            answers: ['18', '20', '21', '25'],
-            correctIndex: 2,
-            hint: 'ההפרשים: +2, +3, +4, +5, +6. אז 15+6=?'
+            question: 'מחיר ½ קילוגרם שוקולד 20 שקלים. מה המחיר של 4 קילוגרמים שוקולד?',
+            answers: ['80 ש"ח', '100 ש"ח', '180 ש"ח', '160 ש"ח'],
+            correctIndex: 3,
+            hint: 'אם ½ ק"ג = 20₪, אז 1 ק"ג = 40₪. ו-4 ק"ג = ?'
         },
         {
-            id: 213,
-            category: 'sequences',
+            id: 154,
+            category: 'fractions',
             type: 'text',
-            question: '64, 32, 16, 8, __',
-            answers: ['2', '4', '6', '0'],
+            question: 'כדי להכין 60 פנקייקים צריך 2 קילוגרמים קמח. לקרן יש 700 גרם קמח. כמה גרמים חסרים לה?',
+            answers: ['1 ק"ג', '1,300 גרם', '10 גרם', '1,400 גרם'],
             correctIndex: 1,
-            hint: 'כל מספר מתחלק ב-2. 8÷2=?'
+            hint: '2 ק"ג = 2000 גרם. חסר: 2000-700=?'
         },
         {
-            id: 214,
-            category: 'sequences',
+            id: 155,
+            category: 'fractions',
             type: 'text',
-            question: '7, 14, 21, 28, __',
-            answers: ['32', '35', '42', '30'],
-            correctIndex: 1,
-            hint: 'לוח הכפל של 7: 7×1, 7×2, 7×3, 7×4, 7×5=?'
-        },
-        {
-            id: 215,
-            category: 'sequences',
-            type: 'text',
-            question: '1, 2, 4, 8, 16, __',
-            answers: ['20', '24', '32', '64'],
-            correctIndex: 2,
-            hint: 'כל מספר כפול 2 מהקודם. 16×2=?'
+            question: 'לדני יש 2 מטר של חוט. הוא השתמש ב-80 ס"מ. כמה נשאר לו?',
+            answers: ['120 ס"מ', '180 ס"מ', '20 ס"מ', '280 ס"מ'],
+            correctIndex: 0,
+            hint: '2 מטר = 200 ס"מ. נשאר: 200-80=?'
         },
 
         // ========== ידע כללי ==========
@@ -685,51 +829,6 @@ const QUESTIONS_DATABASE = {
             correctIndex: 0,
             hint: 'נהר שזורם באפריקה ועובר דרך מצרים.'
         },
-        {
-            id: 311,
-            category: 'general_knowledge',
-            type: 'text',
-            question: 'כמה יבשות יש בעולם?',
-            answers: ['5', '6', '7', '8'],
-            correctIndex: 2,
-            hint: 'אסיה, אפריקה, צפון אמריקה, דרום אמריקה, אירופה, אוסטרליה, ו...'
-        },
-        {
-            id: 312,
-            category: 'general_knowledge',
-            type: 'text',
-            question: 'איזה כוכב לכת הכי קרוב לשמש?',
-            answers: ['נוגה', 'כוכב חמה', 'מאדים', 'כדור הארץ'],
-            correctIndex: 1,
-            hint: 'הכוכב הקטן ביותר והקרוב ביותר לשמש.'
-        },
-        {
-            id: 313,
-            category: 'general_knowledge',
-            type: 'text',
-            question: 'מה שם ההר הגבוה בעולם?',
-            answers: ['קילימנג\'רו', 'אוורסט', 'מון בלאן', 'החרמון'],
-            correctIndex: 1,
-            hint: 'נמצא בין נפאל לטיבט, גובהו מעל 8,800 מטר.'
-        },
-        {
-            id: 314,
-            category: 'general_knowledge',
-            type: 'text',
-            question: 'כמה שיניים יש לאדם מבוגר?',
-            answers: ['28', '30', '32', '36'],
-            correctIndex: 2,
-            hint: 'כולל שיני בינה (4 שיניים).'
-        },
-        {
-            id: 315,
-            category: 'general_knowledge',
-            type: 'text',
-            question: 'מה השפה הנפוצה ביותר בעולם?',
-            answers: ['אנגלית', 'סינית', 'ספרדית', 'ערבית'],
-            correctIndex: 1,
-            hint: 'השפה של המדינה עם הכי הרבה אנשים בעולם.'
-        },
 
         // ========== אוצר מילים ==========
         {
@@ -777,51 +876,6 @@ const QUESTIONS_DATABASE = {
             correctIndex: 1,
             hint: 'ספרן קשור לספרים. איפה יש הרבה ספרים?'
         },
-        {
-            id: 356,
-            category: 'vocabulary',
-            type: 'text',
-            question: 'מה ההפך של "צר"?',
-            answers: ['קטן', 'רחב', 'ארוך', 'נמוך'],
-            correctIndex: 1,
-            hint: 'צר = לא רחב. מה ההפך?'
-        },
-        {
-            id: 357,
-            category: 'vocabulary',
-            type: 'text',
-            question: '"תלמיד חרוץ" הוא תלמיד ש:',
-            answers: ['עצלן', 'משחק הרבה', 'לומד ועובד קשה', 'ישן בכיתה'],
-            correctIndex: 2,
-            hint: 'חרוץ = עובד קשה, מתאמץ.'
-        },
-        {
-            id: 358,
-            category: 'vocabulary',
-            type: 'text',
-            question: 'מה המשמעות של "שביל"?',
-            answers: ['כביש רחב', 'דרך צרה', 'בניין', 'גן'],
-            correctIndex: 1,
-            hint: 'דרך קטנה להליכה, לא לנסיעה.'
-        },
-        {
-            id: 359,
-            category: 'vocabulary',
-            type: 'text',
-            question: '"זקן" הוא ההפך של:',
-            answers: ['ילד', 'צעיר', 'גבוה', 'שמן'],
-            correctIndex: 1,
-            hint: 'זקן = מבוגר. מה ההפך?'
-        },
-        {
-            id: 360,
-            category: 'vocabulary',
-            type: 'text',
-            question: 'מה המשמעות של הביטוי "יד ימינו"?',
-            answers: ['אויב', 'עוזר נאמן', 'שכן', 'מורה'],
-            correctIndex: 1,
-            hint: 'מישהו שעוזר לנו בכל דבר, שסומכים עליו.'
-        },
 
         // ========== יוצא דופן ==========
         {
@@ -855,189 +909,64 @@ const QUESTIONS_DATABASE = {
             id: 404,
             category: 'odd_one_out',
             type: 'text',
+            question: 'מה לא שייך? אוטובוס, רכבת, מטוס, ספינה, עץ',
+            answers: ['אוטובוס', 'רכבת', 'מטוס', 'ספינה', 'עץ'],
+            correctIndex: 4,
+            hint: 'ארבעה מהם הם כלי תחבורה. אחד הוא צמח.'
+        },
+        {
+            id: 405,
+            category: 'odd_one_out',
+            type: 'text',
+            question: 'מה לא שייך? שולחן, כיסא, ארון, מיטה, טלוויזיה',
+            answers: ['שולחן', 'כיסא', 'ארון', 'מיטה', 'טלוויזיה'],
+            correctIndex: 4,
+            hint: 'ארבעה מהם הם רהיטים. אחד הוא מכשיר חשמלי.'
+        },
+        {
+            id: 406,
+            category: 'odd_one_out',
+            type: 'text',
+            question: 'מה לא שייך? ינואר, פברואר, שבת, מרץ, אפריל',
+            answers: ['ינואר', 'פברואר', 'שבת', 'מרץ', 'אפריל'],
+            correctIndex: 2,
+            hint: 'ארבעה מהם הם חודשים. אחד הוא יום בשבוע.'
+        },
+        {
+            id: 407,
+            category: 'odd_one_out',
+            type: 'text',
+            question: 'מה לא שייך? גיטרה, פסנתר, כינור, תוף, ספר',
+            answers: ['גיטרה', 'פסנתר', 'כינור', 'תוף', 'ספר'],
+            correctIndex: 4,
+            hint: 'ארבעה מהם הם כלי נגינה.'
+        },
+        {
+            id: 408,
+            category: 'odd_one_out',
+            type: 'text',
             question: 'מה לא שייך? 2, 4, 6, 7, 8',
             answers: ['2', '4', '6', '7', '8'],
             correctIndex: 3,
             hint: 'ארבעה מהם הם מספרים זוגיים. אחד הוא אי-זוגי.'
         },
         {
-            id: 405,
-            category: 'odd_one_out',
-            type: 'text',
-            question: 'מה לא שייך? ינואר, פברואר, שני, מרץ, אפריל',
-            answers: ['ינואר', 'פברואר', 'שני', 'מרץ', 'אפריל'],
-            correctIndex: 2,
-            hint: 'ארבעה הם שמות חודשים. אחד הוא שם של יום בשבוע.'
-        },
-        {
-            id: 406,
-            category: 'odd_one_out',
-            type: 'text',
-            question: 'מה לא שייך? מכונית, אוטובוס, רכבת, עץ, אופניים',
-            answers: ['מכונית', 'אוטובוס', 'רכבת', 'עץ', 'אופניים'],
-            correctIndex: 3,
-            hint: 'ארבעה הם כלי תחבורה. אחד הוא צמח.'
-        },
-        {
-            id: 407,
-            category: 'odd_one_out',
-            type: 'text',
-            question: 'מה לא שייך? כף, מזלג, סכין, כוס, ספר',
-            answers: ['כף', 'מזלג', 'סכין', 'כוס', 'ספר'],
-            correctIndex: 4,
-            hint: 'ארבעה הם כלי אוכל. אחד הוא לקריאה.'
-        },
-        {
-            id: 408,
-            category: 'odd_one_out',
-            type: 'text',
-            question: 'מה לא שייך? עין, אוזן, אף, יד, פה',
-            answers: ['עין', 'אוזן', 'אף', 'יד', 'פה'],
-            correctIndex: 3,
-            hint: 'ארבעה הם איברים בפנים. אחד הוא איבר בגוף אבל לא בפנים.'
-        },
-        {
             id: 409,
             category: 'odd_one_out',
             type: 'text',
-            question: 'מה לא שייך? משולש, ריבוע, עיגול, מלבן, שמש',
-            answers: ['משולש', 'ריבוע', 'עיגול', 'מלבן', 'שמש'],
-            correctIndex: 4,
-            hint: 'ארבעה הם צורות גיאומטריות. אחד הוא גוף שמיימי.'
+            question: 'מה לא שייך? כדורגל, כדורסל, טניס, שחמט, כדורעף',
+            answers: ['כדורגל', 'כדורסל', 'טניס', 'שחמט', 'כדורעף'],
+            correctIndex: 3,
+            hint: 'ארבעה מהם הם משחקים עם כדור. אחד הוא משחק לוח.'
         },
         {
             id: 410,
             category: 'odd_one_out',
             type: 'text',
-            question: 'מה לא שייך? פסנתר, גיטרה, כינור, חליל, טלוויזיה',
-            answers: ['פסנתר', 'גיטרה', 'כינור', 'חליל', 'טלוויזיה'],
+            question: 'מה לא שייך? עיפרון, מחק, מחברת, סרגל, סוכריה',
+            answers: ['עיפרון', 'מחק', 'מחברת', 'סרגל', 'סוכריה'],
             correctIndex: 4,
-            hint: 'ארבעה הם כלי נגינה. אחד הוא מכשיר חשמלי.'
-        },
-        {
-            id: 411,
-            category: 'odd_one_out',
-            type: 'text',
-            question: 'מה לא שייך? ורד, שושנה, צבעוני, כלב, חמנייה',
-            answers: ['ורד', 'שושנה', 'צבעוני', 'כלב', 'חמנייה'],
-            correctIndex: 3,
-            hint: 'ארבעה הם פרחים. אחד הוא חיה.'
-        },
-        {
-            id: 412,
-            category: 'odd_one_out',
-            type: 'text',
-            question: 'מה לא שייך? ראשון, שני, שלישי, ארבע, רביעי',
-            answers: ['ראשון', 'שני', 'שלישי', 'ארבע', 'רביעי'],
-            correctIndex: 3,
-            hint: 'ארבעה הם מספרים סודרים. אחד הוא מספר רגיל.'
-        },
-
-        // ========== אנלוגיות צורניות (תיאור טקסטואלי) ==========
-        {
-            id: 501,
-            category: 'visual_analogies',
-            type: 'visual_text',
-            question: 'ריבוע גדול כחול : ריבוע קטן כחול = עיגול גדול אדום : ?',
-            answers: ['עיגול גדול כחול', 'עיגול קטן אדום', 'ריבוע קטן אדום', 'עיגול גדול אדום'],
-            correctIndex: 1,
-            hint: 'הקשר: צורה גדולה הופכת לאותה צורה בקטן, הצבע נשאר.'
-        },
-        {
-            id: 502,
-            category: 'visual_analogies',
-            type: 'visual_text',
-            question: 'משולש פונה למעלה : משולש פונה למטה = חץ ימינה : ?',
-            answers: ['חץ למעלה', 'חץ שמאלה', 'חץ למטה', 'עיגול'],
-            correctIndex: 1,
-            hint: 'הקשר: הכיוון מתהפך. מעלה→למטה, אז ימינה→?'
-        },
-        {
-            id: 503,
-            category: 'visual_analogies',
-            type: 'visual_text',
-            question: 'צורה מלאה : צורה ריקה (מתאר בלבד) = ריבוע מלא : ?',
-            answers: ['ריבוע מלא גדול', 'עיגול ריק', 'ריבוע ריק', 'משולש מלא'],
-            correctIndex: 2,
-            hint: 'הקשר: צורה מלאה הופכת לריקה (רק מתאר).'
-        },
-        {
-            id: 504,
-            category: 'visual_analogies',
-            type: 'visual_text',
-            question: 'עיגול אחד : שני עיגולים = משולש אחד : ?',
-            answers: ['שלושה משולשים', 'שני משולשים', 'משולש גדול', 'ריבוע'],
-            correctIndex: 1,
-            hint: 'הקשר: הכמות מוכפלת. 1→2.'
-        },
-        {
-            id: 505,
-            category: 'visual_analogies',
-            type: 'visual_text',
-            question: 'כוכב לבן : כוכב שחור = לב לבן : ?',
-            answers: ['לב אדום', 'לב שחור', 'כוכב לבן', 'עיגול שחור'],
-            correctIndex: 1,
-            hint: 'הקשר: הצבע משתנה מלבן לשחור.'
-        },
-
-        // ========== מטריצות (תיאור טקסטואלי) ==========
-        {
-            id: 601,
-            category: 'matrices',
-            type: 'visual_text',
-            question: 'במטריצה 3×3: בכל שורה יש לב, ריבוע ועיגול. בכל שורה הצבעים הם כחול, צהוב ולבן. מה חסר בתא האחרון אם יש כבר לב כחול ועיגול צהוב?',
-            answers: ['לב צהוב', 'ריבוע לבן', 'עיגול כחול', 'ריבוע צהוב'],
-            correctIndex: 1,
-            hint: 'בשורה יש לב ועיגול - חסר ריבוע. יש כחול וצהוב - חסר לבן.'
-        },
-        {
-            id: 602,
-            category: 'matrices',
-            type: 'visual_text',
-            question: 'במטריצה 2×2: בפינה עליונה שמאלית יש עיגול, בפינה עליונה ימנית יש ריבוע, בפינה תחתונה שמאלית יש ריבוע. מה בפינה תחתונה ימנית?',
-            answers: ['ריבוע', 'משולש', 'עיגול', 'מעוין'],
-            correctIndex: 2,
-            hint: 'חפש את הדפוס: באלכסון יש אותה צורה.'
-        },
-        {
-            id: 603,
-            category: 'matrices',
-            type: 'visual_text',
-            question: 'בכל שורה יש: גדול, בינוני, קטן. בכל עמודה יש: עיגול, ריבוע, משולש. מה הצורה הגדולה בעמודה של המשולשים?',
-            answers: ['עיגול גדול', 'ריבוע גדול', 'משולש גדול', 'משולש קטן'],
-            correctIndex: 2,
-            hint: 'בעמודה של המשולשים - כל הצורות הן משולשים. הגדול הוא משולש גדול.'
-        },
-        {
-            id: 604,
-            category: 'matrices',
-            type: 'visual_text',
-            question: 'בסדרה של צורות: הצורה מסתובבת 90 מעלות בכל פעם. אם התחלנו עם משולש שמצביע למעלה, לאן הוא יצביע אחרי 3 סיבובים?',
-            answers: ['למעלה', 'למטה', 'ימינה', 'שמאלה'],
-            correctIndex: 3,
-            hint: 'סיבוב 1: ימינה. סיבוב 2: למטה. סיבוב 3: שמאלה.'
+            hint: 'ארבעה מהם הם ציוד לבית ספר. אחד הוא ממתק.'
         }
     ]
 };
-
-// פונקציה להחזרת שאלות לפי קטגוריה
-function getQuestionsByCategory(categoryId) {
-    if (categoryId === 'mixed') {
-        return QUESTIONS_DATABASE.questions;
-    }
-    return QUESTIONS_DATABASE.questions.filter(q => q.category === categoryId);
-}
-
-// פונקציה להחזרת שאלות רנדומליות
-function getRandomQuestions(categoryId, count) {
-    const questions = getQuestionsByCategory(categoryId);
-    const shuffled = [...questions].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, Math.min(count, shuffled.length));
-}
-
-// ייצוא
-window.QUESTIONS_DATABASE = QUESTIONS_DATABASE;
-window.getQuestionsByCategory = getQuestionsByCategory;
-window.getRandomQuestions = getRandomQuestions;
-
-console.log(`📚 נטענו ${QUESTIONS_DATABASE.questions.length} שאלות מ-${QUESTIONS_DATABASE.categories.length} קטגוריות`);
